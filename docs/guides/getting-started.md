@@ -18,8 +18,8 @@ Currently, Oxidite is in development. To use it:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your username/oxidite.git
-cd oxidite
+git clone https://github.com/Kyle6012/rust-oxidite.git
+cd rust-oxidite
 
 # Build the project
 cargo build
@@ -271,8 +271,8 @@ server.listen("127.0.0.1:8080".parse().unwrap()).await
 
 ## Getting Help
 
-- [GitHub Discussions](https://github.com/yourusername/oxidite/discussions)
-- [GitHub Issues](https://github.com/yourusername/oxidite/issues)
+- [GitHub Discussions](https://github.com/Kyle6012/rust-oxidite/discussions)
+- [GitHub Issues](https://github.com/Kyle6012/rust-oxidite/issues)
 - Read the [Architecture Documentation](../architecture/overview.md)
 
 ---
