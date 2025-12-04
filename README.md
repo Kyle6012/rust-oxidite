@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/logo/oxidite.jpg" alt="Oxidite Logo" width="400"/>
+</p>
+
 # Oxidite
 
 [![Rust](https://img.shields.io/badge/rust-1.75%2B-orange.svg)](https://www.rust-lang.org/)
@@ -13,79 +17,78 @@ Oxidite combines the best features of FastAPI, Laravel, Express.js, and Django i
 ## 🚀 Features
 
 ### ⚡ High Performance
-- Built on **Tokio** and **Hyper** for maximum throughput
-- Support for **HTTP/1.1, HTTP/2, and HTTP/3 (QUIC)**
-- 100k+ requests/second capability
-- Zero-cost abstractions
+- [x] Built on **Tokio** and **Hyper** for maximum throughput
+- [x] Support for **HTTP/1.1**
+- [ ] Support for **HTTP/2** and **HTTP/3 (QUIC)**
+- [ ] 100k+ requests/second capability
+- [x] Zero-cost abstractions
 
 ### 🛣️ Advanced Routing
-- Type-safe path, query, and body parameters
-- Automatic **OpenAPI/Swagger** documentation
-- Route grouping and versioning
-- Middleware at route and global levels
+- [x] Type-safe path, query, and body parameters
+- [ ] Automatic **OpenAPI/Swagger** documentation
+- [ ] Route grouping and versioning
+- [x] Middleware at route and global levels
 
 ### 🔧 Powerful Middleware
-- **Tower**-based middleware ecosystem
-- Built-in logging, compression, CORS, CSRF protection
-- Rate limiting and security headers
-- Custom middleware support
+- [x] **Tower**-based middleware ecosystem
+- [ ] Built-in logging, compression, CORS, CSRF protection
+- [ ] Rate limiting and security headers
+- [x] Custom middleware support
 
 ### 🗄️ Universal Database Support
-- **SQL**: PostgreSQL, MySQL, SQLite
-- **NoSQL**: MongoDB, Redis
-- Type-safe query builder
-- **Alembic-style migrations** with auto-diffing
-- Model relationships and transactions
+- [ ] **SQL**: PostgreSQL, MySQL, SQLite
+- [ ] **NoSQL**: MongoDB, Redis
+- [ ] Type-safe query builder
+- [ ] **Alembic-style migrations** with auto-diffing
+- [ ] Model relationships and transactions
 
 ### 🔐 Enterprise-Grade Security
-- **Argon2** password hashing
-- **JWT and Paseto** tokens
-- **OAuth2** support
-- **RBAC** and **PBAC** authorization
-- Built-in CSRF, XSS, and SQL injection protection
+- [ ] **Argon2** password hashing
+- [ ] **JWT and Paseto** tokens
+- [ ] **OAuth2** support
+- [ ] **RBAC** and **PBAC** authorization
+- [ ] Built-in CSRF, XSS, and SQL injection protection
 
 ### 📬 Background Jobs
-- Async job queues with Redis or PostgreSQL
-- Cron-style scheduling
-- Retry logic with exponential backoff
-- Worker clustering
+- [ ] Async job queues with Redis or PostgreSQL
+- [ ] Cron-style scheduling
+- [ ] Retry logic with exponential backoff
+- [ ] Worker clustering
 
 ### 💾 Multi-Layer Caching
-- In-memory and Redis caching
-- TTL and tag-based invalidation
-- Response caching middleware
+- [ ] In-memory and Redis caching
+- [ ] TTL and tag-based invalidation
+- [ ] Response caching middleware
 
 ### 🔴 Real-Time Features
-- **WebSockets** with room support
-- **Server-Sent Events (SSE)**
-- Redis pub/sub for horizontal scaling
-- Presence tracking
+- [ ] **WebSockets** with room support
+- [ ] **Server-Sent Events (SSE)**
+- [ ] Redis pub/sub for horizontal scaling
+- [ ] Presence tracking
 
 ### 🛠️ Developer-First CLI
-```bash
-oxidite new myapp        # Scaffold new project
-oxidite dev              # Hot-reload dev server
-oxidite make:model User  # Generate models
-oxidite migrate          # Run migrations
-oxidite queue:work       # Start job workers
-oxidite test             # Run test suite
-```
+- [ ] `oxidite new myapp`        # Scaffold new project
+- [ ] `oxidite dev`              # Hot-reload dev server
+- [ ] `oxidite make:model User`  # Generate models
+- [ ] `oxidite migrate`          # Run migrations
+- [ ] `oxidite queue:work`       # Start job workers
+- [ ] `oxidite test`             # Run test suite
 
 ### 📊 Built-In Admin Dashboard
-- User and role management
-- Queue monitoring
-- Log viewer
-- Health checks
+- [ ] User and role management
+- [ ] Queue monitoring
+- [ ] Log viewer
+- [ ] Health checks
 
 ### 🎨 Template Engine
-- Server-side rendering with Blade/Django-like syntax
-- Auto-escaping for XSS protection
-- Layout inheritance
+- [ ] Server-side rendering with Blade/Django-like syntax
+- [ ] Auto-escaping for XSS protection
+- [ ] Layout inheritance
 
 ### 🔌 Plugin System
-- Service provider pattern
-- Hook-based extensibility
-- Dependency injection
+- [ ] Service provider pattern
+- [ ] Hook-based extensibility
+- [ ] Dependency injection
 
 ---
 
