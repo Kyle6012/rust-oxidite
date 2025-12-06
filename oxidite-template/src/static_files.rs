@@ -3,6 +3,7 @@ use std::path::Path;
 use std::sync::Arc;
 use std::future::Future;
 use std::pin::Pin;
+use http::StatusCode;
 
 /// Configuration for static file serving
 #[derive(Clone)]
@@ -49,6 +50,13 @@ impl StaticFiles {
         
         let full_path = Path::new(&self.root).join(file_path);
         
+        // Check if path is a directory, if so try index.html
+        let full_path = if full_path.is_dir() {
+            full_path.join("index.html")
+        } else {
+            full_path
+        };
+
         // Read file
         match std::fs::read_to_string(&full_path) {
             Ok(content) => {
@@ -78,7 +86,12 @@ impl StaticFiles {
                 );
                 Ok(response)
             },
-            Err(_) => Err(Error::NotFound)
+            Err(_) => {
+                // Return 404 Response instead of Error
+                let mut response = Response::new("404 Not Found".into());
+                *response.status_mut() = StatusCode::NOT_FOUND;
+                Ok(response)
+            }
         }
     }
 }
