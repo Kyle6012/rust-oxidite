@@ -127,12 +127,12 @@ Oxidite aims to be the **most complete, batteries-included Rust web framework**,
 #### Tasks
 - [x] Basic CLI structure with clap
 - [x] Project scaffolding (`new`)
-- [ ] Development server (`dev`)
+- [x] Development server (`dev`)
 - [ ] Production build (`build`)
-- [ ] Code generation commands
-  - [ ] `make:model`
-  - [ ] `make:controller`
-  - [ ] `make:middleware`
+- [x] Code generation commands
+  - [x] `make:model`
+  - [x] `make:controller`
+  - [x] `make:middleware`
   - [ ] `make:migration`
 - [ ] Database commands
   - [ ] `migrate`
@@ -157,8 +157,8 @@ Oxidite aims to be the **most complete, batteries-included Rust web framework**,
 
 #### Acceptance Criteria
 - [x] `oxidite new myapp` creates full project
-- [ ] `oxidite dev` runs with hot reload
-- [ ] Code generators produce valid code
+- [x] `oxidite dev` runs with hot reload
+- [x] Code generators produce valid code
 - [ ] All commands fully documented
 
 #### Estimated Effort: 3 weeks
