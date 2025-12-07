@@ -1,4 +1,4 @@
-use oxidite_core::{Request, Response, Error, Result};
+use oxidite_core::{OxiditeRequest, OxiditeResponse, Error, Result};
 use std::path::Path;
 use std::sync::Arc;
 use std::future::Future;
@@ -26,7 +26,7 @@ impl StaticFiles {
     }
 
     /// Serve a static file based on the request
-    pub async fn serve(&self, req: Request) -> Result<Response> {
+    pub async fn serve(&self, req: OxiditeRequest) -> Result<OxiditeResponse> {
         let path = req.uri().path();
         
         // Remove prefix if configured
@@ -79,7 +79,7 @@ impl StaticFiles {
                     "text/plain"
                 };
                 
-                let mut response = Response::new(content.into());
+                let mut response = OxiditeResponse::new(content.into());
                 response.headers_mut().insert(
                     "content-type",
                     content_type.parse().unwrap()
@@ -88,7 +88,7 @@ impl StaticFiles {
             },
             Err(_) => {
                 // Return 404 Response instead of Error
-                let mut response = Response::new("404 Not Found".into());
+                let mut response = OxiditeResponse::new("404 Not Found".into());
                 *response.status_mut() = StatusCode::NOT_FOUND;
                 Ok(response)
             }
@@ -102,7 +102,7 @@ impl StaticFiles {
 /// ```rust
 /// router.get("/assets/*", static_handler("public"));
 /// ```
-pub fn static_handler(root: impl Into<String>) -> impl Fn(Request) -> Pin<Box<dyn Future<Output = Result<Response>> + Send>> + Send + Sync + 'static {
+pub fn static_handler(root: impl Into<String>) -> impl Fn(OxiditeRequest) -> Pin<Box<dyn Future<Output = Result<OxiditeResponse>> + Send>> + Send + Sync + 'static {
     let root = root.into();
     let static_files = Arc::new(StaticFiles::new(root, None));
     
@@ -118,7 +118,7 @@ pub fn static_handler(root: impl Into<String>) -> impl Fn(Request) -> Pin<Box<dy
 /// 
 /// This handler serves files relative to the root of the "public" directory.
 /// For example, a request to `/style.css` will serve `public/style.css`.
-pub async fn serve_static(req: Request) -> Result<Response> {
+pub async fn serve_static(req: OxiditeRequest) -> Result<OxiditeResponse> {
     let static_files = StaticFiles::new("public", None);
     static_files.serve(req).await
 }

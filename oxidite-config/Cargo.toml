@@ -3,9 +3,17 @@ name = "oxidite-config"
 version = "0.1.0"
 edition = "2021"
 authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
+description = "Configuration management for the Oxidite web framework"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["config", "configuration", "settings", "yaml", "toml"]
+categories = ["config", "web-programming"]
 
 [dependencies]
 dotenv = "0.15.0"
 num_cpus = "1.17.0"
 serde = { version = "1.0.228", features = ["derive"] }
 toml = "0.9.8"
+serde_yaml = "0.9"
+notify = "6.1"
+thiserror = "2.0"

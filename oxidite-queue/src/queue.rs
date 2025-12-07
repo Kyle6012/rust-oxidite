@@ -3,6 +3,7 @@ use std::collections::VecDeque;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use crate::job::{JobWrapper, JobStatus};
+use crate::stats::StatsTracker;
 use crate::Result;
 
 /// Queue backend trait
@@ -13,17 +14,22 @@ pub trait QueueBackend: Send + Sync {
     async fn complete(&self, job_id: &str) -> Result<()>;
     async fn fail(&self, job_id: &str, error: String) -> Result<()>;
     async fn retry(&self, job: JobWrapper) -> Result<()>;
+    async fn move_to_dead_letter(&self, job: JobWrapper) -> Result<()>;
+    async fn list_dead_letter(&self) -> Result<Vec<JobWrapper>>;
+    async fn retry_from_dead_letter(&self, job_id: &str) -> Result<()>;
 }
 
 /// In-memory queue backend
 pub struct MemoryBackend {
     queue: Arc<Mutex<VecDeque<JobWrapper>>>,
+    dead_letter: Arc<Mutex<Vec<JobWrapper>>>,
 }
 
 impl MemoryBackend {
     pub fn new() -> Self {
         Self {
             queue: Arc::new(Mutex::new(VecDeque::new())),
+            dead_letter: Arc::new(Mutex::new(Vec::new())),
         }
     }
 }
@@ -81,16 +87,45 @@ impl QueueBackend for MemoryBackend {
     async fn retry(&self, job: JobWrapper) -> Result<()> {
         self.enqueue(job).await
     }
+
+    async fn move_to_dead_letter(&self, mut job: JobWrapper) -> Result<()> {
+        job.status = JobStatus::DeadLetter;
+        let mut dlq = self.dead_letter.lock().await;
+        dlq.push(job);
+        Ok(())
+    }
+
+    async fn list_dead_letter(&self) -> Result<Vec<JobWrapper>> {
+        let dlq = self.dead_letter.lock().await;
+        Ok(dlq.clone())
+    }
+
+    async fn retry_from_dead_letter(&self, job_id: &str) -> Result<()> {
+        let mut dlq = self.dead_letter.lock().await;
+        if let Some(pos) = dlq.iter().position(|j| j.id == job_id) {
+            let mut job = dlq.remove(pos);
+            job.status = JobStatus::Pending;
+            job.attempts = 0;
+            job.error = None;
+            drop(dlq); // Release lock before enqueue
+            self.enqueue(job).await?;
+        }
+        Ok(())
+    }
 }
 
 /// Queue for managing jobs
 pub struct Queue {
     backend: Arc<dyn QueueBackend>,
+    stats: StatsTracker,
 }
 
 impl Queue {
     pub fn new(backend: Arc<dyn QueueBackend>) -> Self {
-        Self { backend }
+        Self {
+            backend,
+            stats: StatsTracker::new(),
+        }
     }
 
     pub fn memory() -> Self {
@@ -100,23 +135,52 @@ impl Queue {
     pub async fn enqueue(&self, job: JobWrapper) -> Result<String> {
         let job_id = job.id.clone();
         self.backend.enqueue(job).await?;
+        self.stats.increment_enqueued().await;
         Ok(job_id)
     }
 
     pub async fn dequeue(&self) -> Result<Option<JobWrapper>> {
-        self.backend.dequeue().await
+        let job = self.backend.dequeue().await?;
+        if job.is_some() {
+            self.stats.mark_running().await;
+        }
+        Ok(job)
     }
 
     pub async fn complete(&self, job_id: &str) -> Result<()> {
-        self.backend.complete(job_id).await
+        self.backend.complete(job_id).await?;
+        self.stats.increment_processed().await;
+        Ok(())
     }
 
     pub async fn fail(&self, job_id: &str, error: String) -> Result<()> {
-        self.backend.fail(job_id, error).await
+        self.backend.fail(job_id, error).await?;
+        self.stats.increment_failed().await;
+        Ok(())
     }
 
     pub async fn retry(&self, job: JobWrapper) -> Result<()> {
-        self.backend.retry(job).await
+        self.backend.retry(job).await?;
+        self.stats.increment_retried().await;
+        Ok(())
+    }
+
+    pub async fn move_to_dead_letter(&self, job: JobWrapper) -> Result<()> {
+        self.backend.move_to_dead_letter(job).await?;
+        self.stats.increment_dead_letter().await;
+        Ok(())
+    }
+
+    pub async fn list_dead_letter(&self) -> Result<Vec<JobWrapper>> {
+        self.backend.list_dead_letter().await
+    }
+
+    pub async fn retry_from_dead_letter(&self, job_id: &str) -> Result<()> {
+        self.backend.retry_from_dead_letter(job_id).await
+    }
+
+    pub async fn get_stats(&self) -> crate::stats::QueueStats {
+        self.stats.get_stats().await
     }
 }
 

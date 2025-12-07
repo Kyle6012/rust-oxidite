@@ -3,7 +3,12 @@ name = "oxidite-realtime"
 version = "0.1.0"
 edition = "2021"
 authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
-description = "Realtime features for Oxidite - SSE, WebSockets, and pub/sub"
+description = "WebSocket and real-time features for Oxidite"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["websocket", "realtime", "pubsub", "async", "web"]
+categories = ["web-programming", "network-programming"]
+
 
 [dependencies]
 tokio = { version = "1.48", features = ["full"] }

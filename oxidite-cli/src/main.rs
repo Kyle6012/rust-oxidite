@@ -44,6 +44,18 @@ enum Commands {
         #[command(subcommand)]
         seeder: SeedCommand,
     },
+    /// Queue management
+    Queue {
+        #[command(subcommand)]
+        queue: QueueCommand,
+    },
+    /// System health check
+    Doctor,
+    /// Production build
+    Build {
+        #[arg(short, long)]
+        release: bool,
+    },
     /// Start development server with hot reload
     Dev,
 }
@@ -76,6 +88,21 @@ enum SeedCommand {
     Run,
     /// Create a new seeder
     Create { name: String },
+}
+
+#[derive(Subcommand)]
+enum QueueCommand {
+    /// Start queue worker
+    Work {
+        #[arg(short, long, default_value = "4")]
+        workers: usize,
+    },
+    /// List queue statistics
+    List,
+    /// List dead letter queue
+    Dlq,
+    /// Clear all pending jobs
+    Clear,
 }
 
 async fn hello(_req: OxiditeRequest) -> Result<OxiditeResponse> {
@@ -156,6 +183,53 @@ async fn main() -> Result<()> {
                     commands::seed::create_seeder(&name)
                         .map_err(|e| oxidite_core::Error::Server(e.to_string()))?;
                 }
+            }
+            Ok(())
+        }
+        Commands::Queue { queue } => {
+            match queue {
+                QueueCommand::Work { workers } => {
+                    commands::queue::queue_work(workers)
+                        .await
+                        .map_err(|e| oxidite_core::Error::Server(e.to_string()))?;
+                }
+                QueueCommand::List => {
+                    commands::queue::queue_list()
+                        .await
+                        .map_err(|e| oxidite_core::Error::Server(e.to_string()))?;
+                }
+                QueueCommand::Dlq => {
+                    commands::queue::queue_dlq()
+                        .await
+                        .map_err(|e| oxidite_core::Error::Server(e.to_string()))?;
+                }
+                QueueCommand::Clear => {
+                    commands::queue::queue_clear()
+                        .await
+                        .map_err(|e| oxidite_core::Error::Server(e.to_string()))?;
+                }
+            }
+            Ok(())
+        }
+        Commands::Doctor => {
+            commands::doctor::run_doctor()
+                .map_err(|e| oxidite_core::Error::Server(e.to_string()))?;
+            Ok(())
+        }
+        Commands::Build { release } => {
+            println!("🔨 Building Oxidite project...");
+            let mut cmd = std::process::Command::new("cargo");
+            cmd.arg("build");
+            if release {
+                cmd.arg("--release");
+                println!("📦 Building in release mode");
+            }
+            let status = cmd.status()
+                .map_err(|e| oxidite_core::Error::Server(e.to_string()))?;
+            if status.success() {
+                println!("✅ Build completed successfully");
+            } else {
+                return Err(oxidite_core::Error::Server("Build failed".to_string()));
             }
             Ok(())
         }

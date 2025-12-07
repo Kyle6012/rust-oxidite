@@ -2,6 +2,12 @@
 name = "oxidite-openapi"
 version = "0.1.0"
 edition = "2021"
+authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
+description = "OpenAPI/Swagger documentation generation for Oxidite"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["openapi", "swagger", "api", "documentation", "web"]
+categories = ["web-programming", "development-tools"]
 
 [dependencies]
 serde = { version = "1.0", features = ["derive"] }

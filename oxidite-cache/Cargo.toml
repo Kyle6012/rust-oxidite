@@ -3,6 +3,11 @@ name = "oxidite-cache"
 version = "0.1.0"
 edition = "2021"
 authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
+description = "Caching backends (Memory, Redis) for the Oxidite web framework"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["cache", "redis", "memory", "async", "web"]
+categories = ["caching", "web-programming"]
 
 [dependencies]
 async-trait = "0.1.89"

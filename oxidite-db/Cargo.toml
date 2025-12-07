@@ -3,6 +3,11 @@ name = "oxidite-db"
 version = "0.1.0"
 edition = "2021"
 authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
+description = "Database ORM with relationships and migrations for Oxidite"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["database", "orm", "migrations", "postgres", "mysql"]
+categories = ["database", "web-programming"]
 
 [dependencies]
 async-trait = "0.1"

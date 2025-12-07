@@ -1,189 +1,171 @@
 # Templating Guide
 
-## Overview
+Server-side rendering with the Oxidite template engine.
 
-Oxidite's template engine provides a Django-inspired templating system with support for variables, control structures, template inheritance, and filters.
+## Installation
 
-## Basic Usage
+```toml
+[dependencies]
+oxidite = { version = "1.0", features = ["templates"] }
+```
+
+## Quick Start
 
 ```rust
-use oxidite_template::{Template, Context};
+use oxidite::prelude::*;
+use oxidite::template::*;
 
-let tmpl = Template::new("Hello {{ name }}!").unwrap();
-let mut ctx = Context::new();
-ctx.set("name", "World");
-
-let output = tmpl.render(&ctx).unwrap();
-// Output: "Hello World!"
+#[tokio::main]
+async fn main() -> Result<()> {
+    let templates = TemplateEngine::new("templates");
+    
+    let mut app = Router::new();
+    
+    app.get("/", {
+        let templates = templates.clone();
+        move |_req| {
+            let templates = templates.clone();
+            async move {
+                let html = templates.render("index.html", context! {
+                    title: "Home",
+                    message: "Welcome!"
+                }).await?;
+                
+                Ok(Response::html(html))
+            }
+        }
+    });
+    
+    Server::new(app).listen("127.0.0.1:3000".parse()?).await
+}
 ```
 
 ## Template Syntax
 
-### Variables
-
-Use `{{ variable }}` to insert values:
-
-```html
-<h1>{{ title }}</h1>
-<p>Welcome, {{ user.name }}!</p>
-```
-
-Variables support dot notation for accessing nested fields.
-
-### Filters
-
-Apply filters to variables using the pipe (`|`) syntax:
-
-```html
-{{ name | upper }}
-{{ content | escape }}
-```
-
-**Built-in filters:**
-- `upper` - Convert to uppercase
-- `lower` - Convert to lowercase  
-- `escape` - HTML escape (applied by default)
-
-### Control Structures
-
-#### If Statements
-
-```html
-{% if user.is_authenticated %}
-    <p>Welcome back, {{ user.name }}!</p>
-{% else %}
-    <p>Please log in.</p>
-{% endif %}
-```
-
-#### For Loops
-
-```html
-<ul>
-{% for item in items %}
-    <li>{{ item.name }}</li>
-{% endfor %}
-</ul>
-```
-
-## Template Inheritance
-
-### Base Template
-
-Create a base template (`base.html`):
-
+`templates/index.html`:
 ```html
 <!DOCTYPE html>
 <html>
 <head>
-    <title>{% block title %}My Site{% endblock %}</title>
+    <title>{{ title }}</title>
 </head>
 <body>
-    <header>
-        {% block header %}
-        <h1>Welcome</h1>
-        {% endblock %}
-    </header>
+    <h1>{{ message }}</h1>
+    
+    {% if user %}
+        <p>Hello, {{ user.name }}!</p>
+    {% else %}
+        <p>Please log in</p>
+    {% endif %}
+    
+    <ul>
+    {% for item in items %}
+        <li>{{ item.name }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>
+```
+
+## Template Inheritance
+
+`templates/layout.html`:
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}My App{% endblock %}</title>
+</head>
+<body>
+    <nav>Navigation</nav>
     
     <main>
         {% block content %}{% endblock %}
     </main>
     
-    <footer>
-        {% block footer %}
-        <p>&copy; 2024 My Site</p>
-        {% endblock %}
-    </footer>
+    <footer>Footer</footer>
 </body>
 </html>
 ```
 
-### Child Template
-
-Extend the base template (`page.html`):
-
+`templates/home.html`:
 ```html
-{% extends "base.html" %}
+{% extends "layout.html" %}
 
-{% block title %}My Page{% endblock %}
+{% block title %}Home - My App{% endblock %}
 
 {% block content %}
-    <h2>Page Content</h2>
-    <p>This overrides the content block.</p>
+    <h1>Welcome Home!</h1>
 {% endblock %}
 ```
 
-### Using Template Engine
+## Rendering
 
 ```rust
-use oxidite_template::{TemplateEngine, Context};
+use oxidite::template::*;
 
-let mut engine = TemplateEngine::new();
-
-// Load templates
-engine.add_template("base.html", base_html).unwrap();
-engine.add_template("page.html", child_html).unwrap();
-
-// Render child template (inheritance is automatic)
-let ctx = Context::new();
-let output = engine.render("page.html", &ctx).unwrap();
+async fn home() -> Result<Response> {
+    let html = templates.render("home.html", context! {
+        user: current_user,
+        posts: recent_posts
+    }).await?;
+    
+    Ok(Response::html(html))
+}
 ```
 
-## Includes
+## Filters
 
-Include partial templates:
+Use built-in filters:
 
 ```html
-<!-- header.html -->
-<header>
-    <h1>{{ site_name }}</h1>
-</header>
-
-<!-- main.html -->
-{% include "header.html" %}
-<main>
-    <p>Content here</p>
-</main>
+{{ "hello world" | capitalize }}
+{{ 123.456 | round(2) }}
+{{ date | format_date("%Y-%m-%d") }}
 ```
 
-## Advanced
+## Complete Example
 
-### Nested Blocks
+```rust
+use oxidite::prelude::*;
+use oxidite::template::*;
 
-Blocks can be nested within other blocks for complex inheritance patterns:
+#[derive(Serialize)]
+struct Post {
+    title: String,
+    content: String,
+    author: String,
+}
 
+async fn blog_index(State(db): State<Database>) -> Result<Response> {
+    let posts = Post::all(&db).await?;
+    
+    let html = templates.render("blog/index.html", context! {
+        title: "Blog",
+        posts: posts
+    }).await?;
+    
+    Ok(Response::html(html))
+}
+```
+
+`templates/blog/index.html`:
 ```html
-{% extends "base.html" %}
+{% extends "layout.html" %}
+
+{% block title %}Blog{% endblock %}
 
 {% block content %}
-    <div class="wrapper">
-        {% block inner %}
-        Default inner content
-        {% endblock %}
-    </div>
+<h1>Blog Posts</h1>
+
+{% for post in posts %}
+<article>
+    <h2>{{ post.title }}</h2>
+    <p>By {{ post.author }}</p>
+    <div>{{ post.content }}</div>
+</article>
+{% endfor %}
 {% endblock %}
 ```
 
-### Context with JSON
-
-```rust
-let mut ctx = Context::new();
-ctx.set("user", serde_json::json!({
-    "name": "Alice",
-    "role": "admin",
-    "permissions": ["read", "write"]
-}));
-```
-
-## Best Practices
-
-1. **Keep templates simple** - Move complex logic to Rust code
-2. **Use inheritance** - Create base templates for consistent layouts
-3. **Organize partials** - Use includes for reusable components
-4. **Pass structured data** - Use JSON objects for complex data
-5. **Escape by default** - Variables are HTML-escaped automatically
-
-## Next Steps
-
-- [Database Guide](database.md) - Learn about ORM and query building
-- [Authentication Guide](authentication.md) - Add user authentication
+Complete documentation at [docs.rs/oxidite](https://docs.rs/oxidite)

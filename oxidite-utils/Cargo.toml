@@ -3,7 +3,12 @@ name = "oxidite-utils"
 version = "0.1.0"
 edition = "2021"
 authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
-description = "Common utilities for the Oxidite framework"
+description = "Utility functions and helpers for the Oxidite web framework"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["utilities", "helpers", "web", "framework", "rust"]
+categories = ["web-programming"]
+
 
 [dependencies]
 chrono = { version = "0.4", features = ["serde"] }

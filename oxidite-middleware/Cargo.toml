@@ -3,6 +3,11 @@ name = "oxidite-middleware"
 version = "0.1.0"
 edition = "2021"
 authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
+description = "HTTP middleware for Oxidite (CORS, logging, compression, rate limiting)"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["middleware", "http", "cors", "logging", "compression"]
+categories = ["web-programming"]
 
 [dependencies]
 oxidite-core = { version = "0.1.0", path = "../oxidite-core" }
