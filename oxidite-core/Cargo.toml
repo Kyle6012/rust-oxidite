@@ -3,6 +3,11 @@ name = "oxidite-core"
 version = "0.1.0"
 edition = "2021"
 authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
+description = "Core HTTP server and routing for the Oxidite web framework"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["web", "framework", "http", "async", "server"]
+categories = ["web-programming", "asynchronous"]
 
 [dependencies]
 async-trait = "0.1.89"
@@ -23,3 +28,4 @@ tower-service = "0.3.3"
 tokio-rustls = "0.26"
 rustls = "0.23"
 rustls-pemfile = "2.1"
+cookie = "0.18"

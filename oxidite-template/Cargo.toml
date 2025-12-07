@@ -3,6 +3,11 @@ name = "oxidite-template"
 version = "0.1.0"
 edition = "2021"
 authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
+description = "Template engine for server-side rendering in Oxidite"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["template", "rendering", "html", "ssr", "web"]
+categories = ["template-engine", "web-programming"]
 
 [dependencies]
 regex = "1.11.3"

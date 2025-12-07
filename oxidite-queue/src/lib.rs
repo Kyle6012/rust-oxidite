@@ -1,12 +1,14 @@
 pub mod job;
 pub mod queue;
 pub mod worker;
+pub mod stats;
 
 pub use job::{Job, JobStatus, JobResult};
 pub use queue::{Queue, QueueBackend, MemoryBackend};
 pub mod redis;
 pub use crate::redis::RedisBackend;
 pub use worker::Worker;
+pub use stats::{QueueStats, StatsTracker};
 
 use thiserror::Error;
 

@@ -17,7 +17,7 @@ pub use security_headers::{SecurityHeadersLayer, SecurityHeadersConfig, FrameOpt
 pub use csrf::{CsrfLayer, CsrfConfig};
 pub use rate_limit::{RateLimiter, RateLimitConfig};
 pub use timeout::{TimeoutMiddleware, TimeoutError};
-pub use server_header::add_server_headers;
+pub use server_header::add_server_header;
 
 // Re-export ServiceBuilder for convenience
 pub use tower::ServiceBuilder;

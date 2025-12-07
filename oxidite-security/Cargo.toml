@@ -3,7 +3,12 @@ name = "oxidite-security"
 version = "0.1.0"
 edition = "2021"
 authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
-description = "Security utilities for Oxidite - encryption, sanitization, and secure random"
+description = "Security utilities for Oxidite (CSRF, XSS protection, encryption)"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["security", "csrf", "xss", "encryption", "web"]
+categories = ["web-programming", "cryptography"]
+
 
 [dependencies]
 thiserror = "2.0"

@@ -6,6 +6,7 @@ use crate::{QueueBackend, job::JobWrapper, Result, QueueError};
 pub struct RedisBackend {
     client: Client,
     queue_key: String,
+    dlq_key: String,
 }
 
 impl RedisBackend {
@@ -13,9 +14,12 @@ impl RedisBackend {
         let client = Client::open(url)
             .map_err(|e| QueueError::BackendError(e.to_string()))?;
         
+        let dlq_key = format!("{}_dlq", queue_key);
+        
         Ok(Self {
             client,
             queue_key: queue_key.to_string(),
+            dlq_key,
         })
     }
 }
@@ -71,5 +75,63 @@ impl QueueBackend for RedisBackend {
 
     async fn retry(&self, job: JobWrapper) -> Result<()> {
         self.enqueue(job).await
+    }
+
+    async fn move_to_dead_letter(&self, job: JobWrapper) -> Result<()> {
+        let mut conn = self.client.get_multiplexed_async_connection()
+            .await
+            .map_err(|e| QueueError::BackendError(e.to_string()))?;
+            
+        let payload = serde_json::to_string(&job)?;
+        let _: () = conn.lpush(&self.dlq_key, payload)
+            .await
+            .map_err(|e| QueueError::BackendError(e.to_string()))?;
+            
+        Ok(())
+    }
+
+    async fn list_dead_letter(&self) -> Result<Vec<JobWrapper>> {
+        let mut conn = self.client.get_multiplexed_async_connection()
+            .await
+            .map_err(|e| QueueError::BackendError(e.to_string()))?;
+            
+        let results: Vec<String> = conn.lrange(&self.dlq_key, 0, -1)
+            .await
+            .map_err(|e| QueueError::BackendError(e.to_string()))?;
+            
+        let mut jobs = Vec::new();
+        for payload in results {
+            if let Ok(job) = serde_json::from_str::<JobWrapper>(&payload) {
+                jobs.push(job);
+            }
+        }
+        
+        Ok(jobs)
+    }
+
+    async fn retry_from_dead_letter(&self, job_id: &str) -> Result<()> {
+        let jobs = self.list_dead_letter().await?;
+        
+        // Find the job by ID
+        if let Some(job) = jobs.iter().find(|j| j.id == job_id) {
+            // Remove from DLQ
+            let mut conn = self.client.get_multiplexed_async_connection()
+                .await
+                .map_err(|e| QueueError::BackendError(e.to_string()))?;
+                
+            let payload = serde_json::to_string(&job)?;
+            let _: () = conn.lrem(&self.dlq_key, 1, payload)
+                .await
+                .map_err(|e| QueueError::BackendError(e.to_string()))?;
+            
+            // Clone and reset before re-enqueue
+            let mut job_clone = job.clone();
+            job_clone.status = crate::job::JobStatus::Pending;
+            job_clone.attempts = 0;
+            job_clone.error = None;
+            self.enqueue(job_clone).await?;
+        }
+        
+        Ok(())
     }
 }

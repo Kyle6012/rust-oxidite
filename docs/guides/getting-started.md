@@ -1,78 +1,259 @@
 # Getting Started with Oxidite
 
-Oxidite is a modern, high-performance web framework for Rust. This guide will help you set up your environment and create your first Oxidite application.
-
-## Prerequisites
-
-- **Rust**: You need Rust installed. If you haven't, install it via [rustup](https://rustup.rs/):
-  ```bash
-  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
-  ```
+This guide will help you build your first web application with Oxidite.
 
 ## Installation
 
-Oxidite provides a CLI tool to scaffold projects. Install it from the source:
+### Prerequisites
+
+- Rust 1.70 or higher
+- Cargo package manager
+
+### Create a New Project
 
 ```bash
-cargo install --path oxidite-cli
+cargo new my-oxidite-app
+cd my-oxidite-app
 ```
 
-## Creating a New Project
+### Add Oxidite
 
-The `oxidite new` command is interactive and helps you choose the right template for your needs.
+Add Oxidite to your `Cargo.toml`:
+
+```toml
+[dependencies]
+oxidite = "1.0"
+tokio = { version = "1", features = ["full"] }
+serde = { version = "1", features = ["derive"] }
+```
+
+## Your First Route
+
+Replace the contents of `src/main.rs`:
+
+```rust
+use oxidite::prelude::*;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let mut app = Router::new();
+    
+    app.get("/", hello);
+    app.get("/users/:id", get_user);
+    
+    println!("🚀 Server running on http://127.0.0.1:3000");
+    
+    Server::new(app)
+        .listen("127.0.0.1:3000".parse().unwrap())
+        .await
+}
+
+async fn hello(_req: Request) -> Result<Response> {
+    Ok(Response::text("Hello, Oxidite!"))
+}
+
+async fn get_user(Path(params): Path<std::collections::HashMap<String, String>>) -> Result<Response> {
+    let user_id = params.get("id").unwrap();
+    Ok(Response::text(format!("User ID: {}", user_id)))
+}
+```
+
+### Run Your App
 
 ```bash
-oxidite new my-app
+cargo run
 ```
 
-You will be prompted to select a project type:
+Visit `http://localhost:3000` in your browser!
 
-1. **Fullstack Application**: Includes templates, static files, and a complete folder structure.
-2. **REST API**: Optimized for backend-only services with JSON responses.
-3. **Microservice**: Minimal setup for specialized services.
-4. **Serverless Function**: Lightweight handler for event-driven architectures.
+## JSON API Example
 
-### Non-Interactive Mode
+Let's create a simple JSON API:
 
-For CI/CD or scripts, you can pass the type directly:
+```rust
+use oxidite::prelude::*;
+use serde::{Deserialize, Serialize};
 
-```bash
-oxidite new my-api --project-type api
+#[derive(Debug, Serialize, Deserialize)]
+struct User {
+    id: i64,
+    name: String,
+    email: String,
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let mut app = Router::new();
+    
+    app.get("/api/users", list_users);
+    app.get("/api/users/:id", get_user);
+    app.post("/api/users", create_user);
+    
+    Server::new(app)
+        .listen("127.0.0.1:3000".parse().unwrap())
+        .await
+}
+
+async fn list_users(_req: Request) -> Result<Json<Vec<User>>> {
+    let users = vec![
+        User { id: 1, name: "Alice".into(), email: "alice@example.com".into() },
+        User { id: 2, name: "Bob".into(), email: "bob@example.com".into() },
+    ];
+    Ok(Json(users))
+}
+
+async fn get_user(Path(params): Path<std::collections::HashMap<String, String>>) -> Result<Json<User>> {
+    let id = params.get("id").unwrap().parse().unwrap();
+    Ok(Json(User {
+        id,
+        name: "Alice".into(),
+        email: "alice@example.com".into(),
+    }))
+}
+
+#[derive(Deserialize)]
+struct CreateUserRequest {
+    name: String,
+    email: String,
+}
+
+async fn create_user(Json(data): Json<CreateUserRequest>) -> Result<Json<User>> {
+    Ok(Json(User {
+        id: 3,
+        name: data.name,
+        email: data.email,
+    }))
+}
 ```
 
-## Project Structure
+## Using Middleware
 
-A standard Oxidite project (API/Fullstack) looks like this:
+Add CORS and logging:
 
+```rust
+use oxidite::prelude::*;
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let mut app = Router::new();
+    app.get("/", hello);
+    
+    // Add middleware
+    let app = ServiceBuilder::new()
+        .layer(LoggerLayer)
+        .layer(CorsLayer::permissive())
+        .service(app);
+    
+    Server::new(app)
+        .listen("127.0.0.1:3000".parse().unwrap())
+        .await
+}
 ```
-my-app/
-├── src/
-│   ├── controllers/   # Request handlers
-│   ├── models/        # Database models
-│   ├── routes/        # Route definitions
-│   ├── services/      # Business logic
-│   ├── middleware/    # Custom middleware
-│   ├── utils/         # Helper functions
-│   └── main.rs        # Entry point
-├── config/            # Configuration files
-├── tests/             # Integration tests
-├── Cargo.toml         # Dependencies
-└── config.toml        # App configuration
-```
-
-## Running the Server
-
-Oxidite comes with a built-in development server that supports hot reloading.
-
-```bash
-cd my-app
-oxidite dev
-```
-
-The server will start on `http://127.0.0.1:8080` (or the port defined in `config.toml`).
-Any changes to your code will automatically restart the server.
 
 ## Next Steps
 
-- [Database Guide](database.md) - Learn how to use the ORM.
-- [CLI Guide](cli.md) - Explore all CLI commands.
+- [Database Guide](database.md) - Learn about the ORM
+- [Authentication Guide](authentication.md) - Add user authentication
+- [Background Jobs](background-jobs.md) - Process async tasks
+- [Testing Guide](testing.md) - Test your application
+
+## Using the CLI Tool
+
+Install the Oxidite CLI for easier project management:
+
+```bash
+cargo install oxidite-cli
+```
+
+Create a new project:
+
+```bash
+oxidite new myapp --type fullstack
+cd myapp
+oxidite migrate run
+cargo run
+```
+
+Generate code:
+
+```bash
+oxidite make model User
+oxidite make controller UserController
+oxidite make middleware AuthMiddleware
+```
+
+## Feature Flags
+
+Use only what you need:
+
+```toml
+# Full framework (default)
+[dependencies]
+oxidite = "1.0"
+
+# Minimal (HTTP only)
+[dependencies]
+oxidite = { version = "1.0", default-features = false }
+
+# Custom features
+[dependencies]
+oxidite = { version = "1.0", features = ["database", "auth", "queue"] }
+```
+
+Available features:
+- `database` - ORM and migrations
+- `auth` - Authentication and authorization
+- `queue` - Background job processing
+- `cache` - Caching support
+- `realtime` - WebSocket features
+- `templates` - Server-side rendering
+- `mail` - Email sending
+- `storage` - File storage
+
+## Common Patterns
+
+### State Management
+
+```rust
+use std::sync::Arc;
+
+#[derive(Clone)]
+struct AppState {
+    db: Arc<Database>,
+}
+
+app.get("/", |State(state): State<AppState>| async move {
+    // Use state.db
+    Ok(Response::text("OK"))
+});
+```
+
+### Error Handling
+
+```rust
+async fn handler() -> Result<Response> {
+    let data = fetch_data().await?;  // ? operator works
+    Ok(Json(data))
+}
+```
+
+## Troubleshooting
+
+**Port already in use:**
+```bash
+# Change the port
+Server::new(app).listen("127.0.0.1:8080".parse()?).await
+```
+
+**Dependency errors:**
+```bash
+cargo clean
+cargo update
+cargo build
+```
+
+## Resources
+
+- [API Documentation](https://docs.rs/oxidite)
+- [GitHub Repository](https://github.com/Kyle6012/rust-oxidite)
+- [Example Applications](https://github.com/Kyle6012/rust-oxidite/tree/main/examples)

@@ -1,14 +1,12 @@
-use oxidite_core::{Request, Response, Error};
-use std::future::Future;
-use std::pin::Pin;
+use oxidite_core::OxiditeResponse;
+
 
 const OXIDITE_VERSION: &str = env!("CARGO_PKG_VERSION", "0.1.0");
 
 /// Middleware to add Server identification header
-pub async fn server_header_middleware<F>(
-    mut response: Response,
-) -> Response
-where
+pub async fn server_header_middleware(
+    mut response: OxiditeResponse,
+) -> OxiditeResponse
 {
     // Add Server header
     response.headers_mut().insert(
@@ -26,7 +24,7 @@ where
 }
 
 /// Add server headers to response
-pub fn add_server_headers(mut response: Response) -> Response {
+pub fn add_server_header(mut response: OxiditeResponse) -> OxiditeResponse {
     response.headers_mut().insert(
         "server",
         "Oxidite/0.1.0".parse().unwrap()

@@ -1,0 +1,68 @@
+[package]
+name = "oxidite"
+version = "1.0.0"
+edition = "2021"
+authors = ["Meshack Bahati Ouma <bahatikylemeshack@gmail.com>"]
+description = "A modern, batteries-included web framework for Rust inspired by Laravel and Rails"
+license = "MIT"
+repository = "https://github.com/Kyle6012/rust-oxidite"
+documentation = "https://docs.rs/oxidite"
+homepage = "https://github.com/Kyle6012/rust-oxidite"
+keywords = ["web", "framework", "http", "async", "fullstack"]
+categories = ["web-programming", "asynchronous"]
+readme = "README.md"
+
+[dependencies]
+# Core functionality - Always included
+oxidite-core = "0.1.0"
+oxidite-middleware = "0.1.0"
+oxidite-config = "0.1.0"
+
+# Optional features
+oxidite-db = { version = "0.1.0", optional = true }
+oxidite-auth = { version = "0.1.0", optional = true }
+oxidite-security = { version = "0.1.0", optional = true }
+oxidite-queue = { version = "0.1.0", optional = true }
+oxidite-cache = { version = "0.1.0", optional = true }
+oxidite-realtime = { version = "0.1.0", optional = true }
+oxidite-template = { version = "0.1.0", optional = true }
+oxidite-mail = { version = "0.1.0", optional = true }
+oxidite-storage = { version = "0.1.0", optional = true }
+oxidite-macros = { version = "0.1.0", optional = true }
+oxidite-utils = { version = "0.1.0", optional = true }
+serde = "1.0.228"
+
+# Development dependencies
+[dev-dependencies]
+oxidite-testing = "0.1.0"
+tokio = { version = "1.48", features = ["full", "test-util"] }
+
+[features]
+default = ["full"]
+
+# Full framework with all features
+full = [
+    "database",
+    "auth",
+    "queue",
+    "cache",
+    "realtime",
+    "templates",
+    "mail",
+    "storage",
+]
+
+# Individual feature groups
+database = ["dep:oxidite-db", "dep:oxidite-macros"]
+auth = ["dep:oxidite-auth", "database"]
+queue = ["dep:oxidite-queue"]
+cache = ["dep:oxidite-cache"]
+realtime = ["dep:oxidite-realtime"]
+templates = ["dep:oxidite-template"]
+mail = ["dep:oxidite-mail"]
+storage = ["dep:oxidite-storage"]
+security = ["dep:oxidite-security"]
+utils = ["dep:oxidite-utils"]
+
+# Minimal setup (just HTTP server and routing)
+minimal = []

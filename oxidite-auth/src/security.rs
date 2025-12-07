@@ -4,7 +4,8 @@ use oxidite_db::sqlx::Row;
 /// Email verification module
 pub mod email_verification {
     use rand::Rng;
-    
+    use oxidite_db::sqlx::Row; // ✅ REQUIRED for try_get()
+
     /// Generate email verification token
     pub fn generate_token() -> String {
         let mut rng = rand::thread_rng();
@@ -65,7 +66,8 @@ pub mod email_verification {
 /// Password reset module
 pub mod password_reset {
     use rand::Rng;
-    
+    use oxidite_db::sqlx::Row; // ✅ REQUIRED
+
     /// Generate password reset token
     pub fn generate_token() -> String {
         let mut rng = rand::thread_rng();
@@ -144,14 +146,15 @@ pub mod password_reset {
 
 /// Two-Factor Authentication (TOTP) module
 pub mod two_factor {
-    use totp_rs::{TOTP, Algorithm, Secret};
-    use oxidite_db::sqlx::Row;
-    
+    use totp_rs::{TOTP, Algorithm};
+    use oxidite_db::sqlx::Row; // ✅ REQUIRED
+    use rand::Rng;
+
     /// Generate 2FA secret for user
     pub fn generate_secret() -> String {
         use base64::Engine;
         let mut rng = rand::thread_rng();
-        let random_bytes: Vec<u8> = (0..20).map(|_| rng.gen::<u8>()).collect();
+        let random_bytes: Vec<u8> = (0..20).map(|_| rng.random::<u8>()).collect();
         base64::engine::general_purpose::STANDARD.encode(random_bytes)
     }
     
@@ -233,7 +236,6 @@ pub mod two_factor {
     
     /// Generate provisioning URI for TOTP setup (for QR code)
     pub fn generate_provisioning_uri(secret: &str, account: &str, issuer: &str) -> String {
-        // Format: otpauth://totp/issuer:account?secret=SECRET&issuer=ISSUER
         format!(
             "otpauth://totp/{}:{}?secret={}&issuer={}",
             urlencoding::encode(issuer),

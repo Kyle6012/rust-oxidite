@@ -20,7 +20,7 @@ pub async fn run_migrations() -> Result<(), Box<dyn std::error::Error>> {
     
     // Load database URL from config
     let config = Config::load()?;
-    let db_url = config.get("database.url")
+    let db_url = config.get::<String>("database.url")
         .unwrap_or("sqlite://data.db".to_string());
     
     let db = DbPool::connect(&db_url).await?;
@@ -59,7 +59,7 @@ pub async fn revert_migration() -> Result<(), Box<dyn std::error::Error>> {
     
     // Load database URL from config
     let config = Config::load()?;
-    let db_url = config.get("database.url")
+    let db_url = config.get::<String>("database.url")
         .unwrap_or("sqlite://data.db".to_string());
     
     let db = DbPool::connect(&db_url).await?;
@@ -113,7 +113,7 @@ pub async fn migration_status() -> Result<(), Box<dyn std::error::Error>> {
     
     // Try to connect to database to get applied migrations
     let applied = if let Ok(config) = Config::load() {
-        if let Some(db_url) = config.get("database.url").map(String::from) {
+        if let Some(db_url) = config.get::<String>("database.url").map(String::from) {
             if let Ok(db) = DbPool::connect(&db_url).await {
                 manager.get_applied_migrations(&db).await.unwrap_or_default()
             } else {
